@@ -1,0 +1,87 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1
+vclockworks
+Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
+!s110 1701899470
+!i10b 1
+!s100 5?_6EDGo@=c:4_7EETXOJ2
+Z2 !s11b Dg1SIo80bB@j0V0VzS_@n1
+ITIBWezM3F^_aUb6[]]ORZ3
+Z3 VDg1SIo80bB@j0V0VzS_@n1
+S1
+R0
+w1701898055
+8C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/clockworks.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/clockworks.sv
+!i122 8
+L0 1 25
+Z4 OV;L;2020.1;71
+r1
+!s85 0
+31
+!s108 1701899470.000000
+!s107 C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/clockworks.sv|
+!s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/clockworks.sv|
+!i113 1
+Z5 o-work work
+Z6 tCvgOpt 0
+vSOC
+R1
+!s110 1701899468
+!i10b 1
+!s100 MP^@:MTC9CIJ0RH@6OiEl3
+R2
+I`6f`IeBXPgPPSH6MaF6:I0
+R3
+S1
+R0
+w1701899394
+8C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/SoC.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/SoC.sv
+!i122 7
+L0 3 37
+R4
+r1
+!s85 0
+31
+!s108 1701899467.000000
+!s107 clockworks.sv|C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/SoC.sv|
+!s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/SoC.sv|
+!i113 1
+R5
+R6
+n@s@o@c
+vtb
+R1
+!s110 1701899473
+!i10b 1
+!s100 AWQL[6Rgfj[cDgDBBPmcO1
+R2
+IAeka7mz3AVI7doi`AzIdk1
+R3
+S1
+R0
+w1701895784
+8C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/SoC_TB.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/SoC_TB.sv
+!i122 9
+L0 1 30
+R4
+r1
+!s85 0
+31
+!s108 1701899473.000000
+!s107 C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/SoC_TB.sv|
+!s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1/SoC_TB.sv|
+!i113 1
+R5
+R6

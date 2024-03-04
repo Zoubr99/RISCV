@@ -1,0 +1,39 @@
+`include "clockworks.sv"
+
+module SOC( // declaring the inputs and outputs
+    input CLK,
+    input RESET,
+    output [4:0] LEDS,
+    input RXD,
+    output TXD
+);
+
+wire clk;
+wire resetn = 1;
+
+// declaring a 5 bit register
+reg [4:0] count = 0;
+
+// sequential logic based on clock edges
+always_ff @(posedge clk) begin
+        count <= !resetn ? 0: count + 1;
+end
+
+clockworks #(.SLOW(8))
+CW (
+
+    .CLK(CLK),
+    .RESET(RESET),
+    .clk(clk),
+    .resetn(resetn)
+
+
+  );
+
+
+
+// assigning the count to the leds
+assign LEDS = count;
+assign TXD = 1'b0;
+    
+endmodule
