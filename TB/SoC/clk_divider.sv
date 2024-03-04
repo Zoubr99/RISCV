@@ -7,7 +7,7 @@ module clk_divider #(parameter SLOW)( // clock devider
 
 
 // a parameterized regester (counter) -> 2^SLOW ticks of fpga clock (CLK) =1 tick  of (clk)
-logic RST = 1;
+reg RST = 1;
 reg [SLOW:0] slow_CLK = 0;
 
 always_ff @(posedge CLK) begin

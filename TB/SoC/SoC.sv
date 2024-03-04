@@ -9,8 +9,8 @@ module SOC( // declaring the inputs and outputs
     output logic TXD // UART Transmitter
 );
 
-wire clk;
-wire resetn;
+logic clk =0 ;
+logic resetn = 0;
 
 
 // declaring a 5 bit register
@@ -89,30 +89,28 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
 
 
   // sequential logic based on clock edges
-  always_ff @(posedge clk or negedge resetn) begin
-      	  if (!resetn) begin
-        	PC <= 0;
-       	 	C_INST <= 32'b0000000_00000_00000_000_00000_0110011; // NOP
-      	  end 
-      	  else if (!isSYSTEM) begin
-        	C_INST <= MEM[PC]; // assign the instruction in which the program counter is currently pointing towards in the 
+  always_ff @(posedge clk, negedge resetn) begin
+      if (!resetn) begin 
+        PC <= 0;
+        C_INST <= 32'b0000000_00000_00000_000_00000_0110011; // NOP
+      end
+      else if (!isSYSTEM) begin
+        C_INST <= MEM[PC]; // assign the instruction in which the program counter is currently pointing towards in the 
                           // memmory to the the current instruction register
-       		PC <= PC + 1; // increase the program counter ie go to the next instruction in RAM
-       	  end
-	  else if(isSYSTEM) begin
-        	PC <= 0;
-        	C_INST <= 32'b0000000_00000_00000_000_00000_0110011; // NOP
-      	  end
+        PC <= PC + 1; // increase the program counter ie go to the next instruction in RAM
+      end  else if(isSYSTEM) begin
+        PC <= 0;
+        C_INST <= 32'b0000000_00000_00000_000_00000_0110011; // NOP
+      end
   end
 
-  clk_divider #(.SLOW(27))
-  ck (
+  clk_divider #(.SLOW(2))
+  clk_divider (
 
-      .CLK(CLK),
-      .RESET(RESET),
-      .clk(clk),
-      .resetn(resetn)
-
+     .CLK(CLK),
+     .RESET(RESET),
+     .clk(clk),
+     .resetn(resetn)
 
     );
 
