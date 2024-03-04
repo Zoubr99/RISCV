@@ -11,24 +11,24 @@ cModel Technology
 dC:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1
 vclk_divider
 Z0 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z1 !s110 1709554733
+Z1 !s110 1709555045
 !i10b 1
-!s100 4RW6RDc0JjOE]PNmY;ZYD0
+!s100 6cmK`F2jii^h@@P7DIjZ@3
 Z2 !s11b Dg1SIo80bB@j0V0VzS_@n1
-IVM>NLee[km<LFTP<AG8VA0
+I^M9;odH@RP7ggm_YM:Ac]3
 Z3 VDg1SIo80bB@j0V0VzS_@n1
 S1
 Z4 dC:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC
-w1709553518
+w1709554910
 8clk_divider.sv
 Fclk_divider.sv
-!i122 116
+!i122 119
 L0 1 25
 Z5 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z6 !s108 1709554733.000000
+Z6 !s108 1709555044.000000
 Z7 !s107 clk_divider.sv|C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC.sv|
 Z8 !s90 -reportprogress|300|-work|work|C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC.sv|
 !i113 1
@@ -47,7 +47,7 @@ R4
 w1709554723
 8C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC.sv
 FC:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC.sv
-!i122 116
+!i122 119
 L0 4 120
 R5
 r1
@@ -62,7 +62,7 @@ R10
 n@s@o@c
 vtb
 R0
-!s110 1709554735
+!s110 1709555046
 !i10b 1
 !s100 AWQL[6Rgfj[cDgDBBPmcO1
 R2
@@ -73,13 +73,13 @@ R4
 w1709550496
 8C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC_TB.sv
 FC:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC_TB.sv
-!i122 117
+!i122 120
 L0 1 30
 R5
 r1
 !s85 0
 31
-!s108 1709554735.000000
+!s108 1709555046.000000
 !s107 C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC_TB.sv|
 !s90 -reportprogress|300|-work|work|C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC_TB.sv|
 !i113 1
