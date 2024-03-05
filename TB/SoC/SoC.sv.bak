@@ -89,7 +89,7 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
 
 
   // sequential logic based on clock edges
-  always_ff @(posedge clk, negedge resetn) begin
+  always_ff @(posedge clk or negedge resetn) begin
       if (!resetn) begin 
         PC <= 0;
         C_INST <= 32'b0000000_00000_00000_000_00000_0110011; // NOP
@@ -104,7 +104,7 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
       end
   end
 
-  clk_divider #(.SLOW(8))
+  clk_divider #(.SLOW(27))
   clk_divider (
 
      .CLK(CLK),

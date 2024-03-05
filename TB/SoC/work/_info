@@ -11,77 +11,77 @@ cModel Technology
 dC:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1
 vclk_divider
 Z0 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z1 !s110 1709555045
+Z1 !s110 1709600083
 !i10b 1
-!s100 6cmK`F2jii^h@@P7DIjZ@3
+!s100 <UjlS<zcUEoZUaU:N;0VS3
 Z2 !s11b Dg1SIo80bB@j0V0VzS_@n1
-I^M9;odH@RP7ggm_YM:Ac]3
+IcK^HKC6:L]1_L_Kk>N>VV3
 Z3 VDg1SIo80bB@j0V0VzS_@n1
 S1
-Z4 dC:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC
-w1709554910
+Z4 dC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC
+w1709599520
 8clk_divider.sv
 Fclk_divider.sv
-!i122 119
-L0 1 25
-Z5 OV;L;2020.1;71
+!i122 168
+Z5 L0 1 30
+Z6 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z6 !s108 1709555044.000000
-Z7 !s107 clk_divider.sv|C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC.sv|
-Z8 !s90 -reportprogress|300|-work|work|C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC.sv|
+Z7 !s108 1709600083.000000
+Z8 !s107 clk_divider.sv|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC.sv|
+Z9 !s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC.sv|
 !i113 1
-Z9 o-work work
-Z10 tCvgOpt 0
+Z10 o-work work
+Z11 tCvgOpt 0
 vSOC
 R0
 R1
 !i10b 1
-!s100 OUVCg]QY;E_RbkRhaS2E_1
+!s100 nMC7e<_fekU]a^g1STkM01
 R2
-IRR6OK07PJ?@MNTYle3l4R3
+IN9Ug^SGX1inJVek[Qjd;?0
 R3
 S1
 R4
-w1709554723
-8C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC.sv
-FC:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC.sv
-!i122 119
+w1709600075
+8C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC.sv
+!i122 168
 L0 4 120
-R5
+R6
 r1
 !s85 0
 31
-R6
 R7
 R8
-!i113 1
 R9
+!i113 1
 R10
+R11
 n@s@o@c
 vtb
 R0
-!s110 1709555046
+!s110 1709600085
 !i10b 1
 !s100 AWQL[6Rgfj[cDgDBBPmcO1
 R2
-Ic47EOQOzSWZCRPnSInR@W0
+IMT>2d<`_LAD7c_hD<T[g`3
 R3
 S1
 R4
-w1709550496
-8C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC_TB.sv
-FC:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC_TB.sv
-!i122 120
-L0 1 30
+w1701895784
+8C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_TB.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_TB.sv
+!i122 169
 R5
+R6
 r1
 !s85 0
 31
-!s108 1709555046.000000
-!s107 C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC_TB.sv|
-!s90 -reportprogress|300|-work|work|C:/Users/zalmaghribi/Desktop/Git Soc/RISCV/RISCV/TB/SoC/SoC_TB.sv|
+!s108 1709600085.000000
+!s107 C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_TB.sv|
+!s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_TB.sv|
 !i113 1
-R9
 R10
+R11
