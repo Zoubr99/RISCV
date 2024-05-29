@@ -1,4 +1,5 @@
 `include "clk_divider.sv"
+`include "riscv_assembly.sv"
 //`default_nettype none
 
 module SOC( // declaring the inputs and outputs
@@ -18,11 +19,14 @@ assign LEDS = leds;
 // declaring a 5 bit register
 reg [31:0] MEM [0:255]; // BRAM
 reg [31:0] PC = 0; // Program Counter
+reg [31:0] C_INST;
 
+ /*
         // add x0, x0, x0
               //                   rs2   rs1  add  rd   ALUREG
 reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instruction reg
 
+ 
   // initiliasing the SoC Memmory with some instructions
    initial begin // this is only for TB simulation purposes
 
@@ -66,6 +70,40 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
         
    end
 
+    */
+
+  /* 
+   initial begin
+      PC = 0;
+      ADD(x0,x0,x0);
+      ADD(x1,x0,x0);
+      ADDI(x1,x1,1);
+      ADDI(x1,x1,1);
+      ADDI(x1,x1,1);
+      ADDI(x1,x1,1);
+      ADD(x2,x1,x0);
+      ADD(x3,x1,x2);
+      SRLI(x3,x3,3);
+      SLLI(x3,x3,31);
+      SRAI(x3,x3,5);
+      SRLI(x1,x3,26);
+      EBREAK();
+   end
+  */
+  integer L0_ = 8;
+  initial begin
+
+    ADD(x1,x0,x0);
+    ADDI(x2,x0,32);
+  Label(L0_);
+    ADDI(x1,x1,1);
+    BNE(x1,x2, LabelRef(L0_));
+    EBREAK();
+
+
+    endASM();
+
+  end
 
    // RISCV instructions Decoder
   //*********************************************************************************//
@@ -111,7 +149,9 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
   wire [31:0] writeBackData;
   wire        writeBackEn; 
 
-    reg [31:0] RegisterFile [0:31] = '{
+    reg [31:0] RegisterFile [0:31]; // all is 0
+    /*
+    '{
 
     32'b0000_0000_0000_0000_0000_0000_0000_0011,   // REG[0] 
     32'b0000_0000_0000_0000_0000_0000_0000_0100,   // REG[1]
@@ -147,6 +187,8 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
     32'b0000_0000_0000_0000_0000_0000_0010_0010    // REG[31]
 
     };
+    */
+
   //*********************************************************************************//
   //*********************************************************************************//
 
@@ -191,6 +233,58 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
     endcase
    end
 
+reg Branch;
+   always_comb begin
+    case (funct3)
+
+      3'b000: Branch = (rs1 == rs2); // if source reg 1  == source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b001: Branch = (rs1 != rs2); // if source reg 1  != source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b100: Branch = ($signed(rs1) < $signed(rs2)); // if signed source reg 1  < signed source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b101: Branch = ($signed(rs1) >= $signed(rs2)); // if signed source reg 1  >= signed source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b110: Branch = (rs1 < rs2); // if source reg 1  < source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+        
+      3'b111: Branch = (rs1 >= rs2); // if  source reg 1  >  source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      default: Branch = 1'b0; // Branch is set to 0 as default
+    endcase
+   end
+
+/*
+   always_comb begin
+    case (funct3)
+
+      3'b000: aluOut = (funct7[5] & C_INST[5]) ?  // C_INST[5] determines wether the instruction is immediate or ALUreg, funct7[5] determines wether if its ADD or SUB
+          (aluIn1 - aluIn2) : (aluIn1 + aluIn2);
+      3'b000: Branch = (rs1 == rs2); // if source reg 1  == source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b001: aluOut = aluIn1 << shamt; // shifts the ALU in1 (logically) to the left by the shifting ammount
+      3'b001: Branch = (rs1 != rs2); // if source reg 1  != source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b010: aluOut = ($signed(aluIn1) < $signed(aluIn2)); // signed comparison
+      3'b100: Branch = ($signed(rs1) < $signed(rs2)); // if signed source reg 1  < signed source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b011: aluOut = (aluIn1 < aluIn2); // unsigned comparison
+      3'b101: Branch = ($signed(rs1) >= $signed(rs2)); // if signed source reg 1  >= signed source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b100: aluOut = (aluIn1 ^ aluIn2); // XOR
+      3'b110: Branch = (rs1 < rs2); // if source reg 1  < source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+        
+      3'b101: aluOut = funct7[5]? ($signed(aluIn1) >>> shamt) : 
+          ($signed(aluIn1) >> shamt); // for logical or arithmetic right shift, by testing bit 5 of funct7 we determine which function to use, 1 for arithmetic shift (with sign expansion) and 0 for logical shift.
+      3'b111: Branch = (rs1 > rs2=); // if  source reg 1  >  source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+
+      3'b111: aluOut = (aluIn1 & aluIn2);	 // AND
+
+      default: Branch = 1'b0;
+    endcase
+   end
+
+
+*/
 
   //*********************************************************************************//
   //*********************************************************************************//
@@ -203,9 +297,34 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
   reg [1:0] state = FETCH_INSTR; // startsd at fetching  instructions
 
   // register write back
-  assign writeBackData = aluOut; // output of the ALU is assigned to writeback data , which hence will be written into the Reg File
-  assign writeBackEn = (state == EXECUTE && (isALUreg || isALUimm));  // the writting back enable signal, depends on : 1 : we at EXECUTE state
-                                                                       //                                               2 : the instruction si either ALUreg or Imm
+  assign writeBackData = (isJAL || isJALR ) ? (PC + 4) :
+                         (isLUI) ? Uimm :
+                         (isAUIPC) ? (PC + Uimm) :
+                          aluOut; // output of the ALU is assigned to writeback data , which hence will be written into the Reg File
+
+  assign writeBackEn = (state == EXECUTE && 
+                        
+                        (isALUreg ||
+                         isALUimm ||
+                         isJAL    ||
+                         isJALR   ||
+                         isLUI    ||
+                         isAUIPC  
+                         )   
+
+                       );  // the writting back enable signal, depends on : 1 : we at EXECUTE state
+                           //                                               2 : the instruction wich state is 1
+
+
+  //now the next PC "program counter" will be dependant on the on the instruction wether if it is JAL (set nextPC = PC + immed ) and (set rd = PC + 4 ) 
+  // JALR (set nextPC = rs1 + immed) and (rd = PC + 4)
+  // Branch (set nextPC = PC + Bimmed)
+  // if the instruction was none of the jumping instruction then just increase the PC as normal (nextPC = PC + 4)
+  wire [31:0] nextPC = (isBranch && Branch)? PC + Bimm:
+                       (isJAL) ? PC + Jimm:
+                       (isJALR) ? rs1 + Iimm:
+                        PC + 4;
+
 
 
   // sequential logic based on clock edges
@@ -213,21 +332,23 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
       if (!resetn) begin 
         PC <= 0;
         state <= FETCH_INSTR;
-        C_INST <= 32'b0000000_00000_00000_000_00000_0110011; // NOP
+        //C_INST <= 32'b0000000_00000_00000_000_00000_0110011; // NOP
       end
-      else begin
+
+      //************************//
+      else begin // the writting logic
         if (writeBackEn && rdId != 0) begin // these signals are not set as they need they need an ALU into the module
           RegisterFile[rdId] <= writeBackData;
 
-          	    if(rdId == 1) begin
+          	    if(rdId == 1) begin // disblays contents of reg[1] on leds
 	              leds <= writeBackData;
 	              end
         end
-
+     //************************//
               case(state)
 
               FETCH_INSTR: begin
-                C_INST <= MEM[PC]; // assign the instruction in which the program counter is currently pointing towards
+                C_INST <= MEM[PC[31:2]]; // assign the instruction in which the program counter is currently pointing towards
                 state <=  FETCH_REGS; // go to the next state
               end
 
@@ -237,15 +358,16 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
                 state <= EXECUTE; // jump to the next state
               end
 
-              EXECUTE: begin
+              EXECUTE: begin // this part will enable the writing back enable signal
                 if(!isSYSTEM) begin
-                PC <= PC + 1; // increase the program counter ie go to the next instruction in RAM
+                PC <= nextPC; // increase the program counter (based on instruction type) ie go to the next instruction in RAM
                 end
+
                 else if(isSYSTEM) begin
-                PC <= 0;
-                C_INST <= 32'b0000000_00000_00000_000_00000_0110011; // NOP
+                PC <= nextPC;
+                //C_INST <= EBREAK(); // NOP // may not be needed !!!!!!
                 end
-                state <= FETCH_INSTR;
+                state <= FETCH_INSTR; 
               end
             
               endcase
