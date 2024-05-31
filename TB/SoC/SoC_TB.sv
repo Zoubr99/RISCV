@@ -7,7 +7,7 @@ module tb;
    wire txd;
 
 	// instantiating the uut
-   SOC uut(
+   SoC uut(
      .CLK(clk),
      .RESET(reset),
      .LEDS(led),

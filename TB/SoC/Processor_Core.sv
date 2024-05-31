@@ -1,23 +1,25 @@
-`include "clk_divider.sv"
-`include "riscv_assembly.sv"
+//`include "clk_divider.sv"
+
 //`default_nettype none
 
-module SOC( // declaring the inputs and outputs
-    input logic CLK,
-    input logic RESET,
-    output logic [4:0] LEDS,
-    input logic RXD, // UART receiver
-    output logic TXD // UART Transmitter
+module Processor_Core( // declaring the inputs and outputs
+    input logic clk,
+    input logic resetn,
+    input logic [31:0] MEM_dout,
+
+    output logic [31:0] MEM_addr,
+    output logic rMEM_en,
+    output logic [31:0] x1
 );
 
-wire clk;
-wire resetn;
+//wire clk;
+//wire resetn;
 
-reg [4:0] leds;
-assign LEDS = leds;
+//reg [4:0] leds;
+//assign LEDS = leds;
 
 // declaring a 5 bit register
-reg [31:0] MEM [0:255]; // BRAM
+//reg [31:0] MEM [0:255]; // BRAM
 reg [31:0] PC = 0; // Program Counter
 reg [31:0] C_INST;
 
@@ -90,6 +92,9 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
       EBREAK();
    end
   */
+
+  /*
+  `include "riscv_assembly.sv"
   integer L0_ = 8;
   initial begin
 
@@ -104,7 +109,7 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
     endASM();
 
   end
-
+  */
    // RISCV instructions Decoder
   //*********************************************************************************//
   //*********************************************************************************//
@@ -149,11 +154,11 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
   wire [31:0] writeBackData;
   wire        writeBackEn; 
 
-    reg [31:0] RegisterFile [0:31]; // all is 0
-    /*
+    reg [31:0] RegisterFile [0:31] = // all is 0
+    
     '{
 
-    32'b0000_0000_0000_0000_0000_0000_0000_0011,   // REG[0] 
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[0] 
     32'b0000_0000_0000_0000_0000_0000_0000_0100,   // REG[1]
     32'b0000_0000_0000_0000_0000_0000_0000_0101,   // REG[2]
     32'b0000_0000_0000_0000_0000_0000_0000_0110,   // REG[3]
@@ -187,7 +192,7 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
     32'b0000_0000_0000_0000_0000_0000_0010_0010    // REG[31]
 
     };
-    */
+    
 
   //*********************************************************************************//
   //*********************************************************************************//
@@ -291,8 +296,9 @@ reg Branch;
 
 
   localparam FETCH_INSTR = 0; // first state
-  localparam FETCH_REGS = 1; // second state
-  localparam EXECUTE = 2; // third state
+  localparam WAIT_INSTR = 1;
+  localparam FETCH_REGS = 2; // second state
+  localparam EXECUTE = 3; // third state
 
   reg [1:0] state = FETCH_INSTR; // startsd at fetching  instructions
 
@@ -341,15 +347,20 @@ reg Branch;
           RegisterFile[rdId] <= writeBackData;
 
           	    if(rdId == 1) begin // disblays contents of reg[1] on leds
-	              leds <= writeBackData;
+	              x1 <= writeBackData;
 	              end
         end
      //************************//
               case(state)
 
               FETCH_INSTR: begin
-                C_INST <= MEM[PC[31:2]]; // assign the instruction in which the program counter is currently pointing towards
-                state <=  FETCH_REGS; // go to the next state
+               // C_INST <= MEM[PC[31:2]]; // assign the instruction in which the program counter is currently pointing towards
+                state <=  WAIT_INSTR; // go to the next state
+              end
+
+              WAIT_INSTR: begin
+                C_INST <= MEM_dout;
+                state <= FETCH_REGS;
               end
 
               FETCH_REGS: begin
@@ -374,6 +385,10 @@ reg Branch;
       end
   end
 
+  assign MEM_addr = PC;
+  assign rMEM_en = (state == FETCH_INSTR);
+
+/*
   clk_divider #(.SLOW(2))
   clk_divider (
 
@@ -383,11 +398,11 @@ reg Branch;
      .resetn(resetn)
 
     );
-
+*/
 
 
   // assigning the count to the leds
   //assign LEDS = (isSYSTEM) ? 16 : {PC[0],isALUimm,isStore,isLoad,isALUreg};
-  assign TXD = 1'b0;
+ //assign TXD = 1'b0;
     
 endmodule

@@ -1,4 +1,35 @@
+module Ins_Memmory(
+    input logic clk, 
+    input logic [31:0] MEM_addr,
+    output logic [31:0] MEM_dout,
+    input logic rMEM_en
+);
+    
+    reg [31:0] MEM [0:255];
+
 /*
+
+  `include "riscv_assembly.sv"
+  integer L0_ = 8;
+  initial begin
+
+    ADD(x1,x0,x0);
+    ADDI(x2,x0,32);
+  Label(L0_);
+    ADDI(x1,x1,1);
+    BNE(x1,x2, LabelRef(L0_));
+    EBREAK();
+
+    endASM();
+  end
+
+*/
+  //*************************************************************************\\
+ //***************************************************************************\\ 
+//*****************************************************************************\\
+
+
+  /*
  * A simple assembler for RiscV written in VERILOG.
  * See table page 104 of RiscV instruction manual.
  * Bruno Levy, March 2022
@@ -804,5 +835,30 @@ endtask
 
       
    
-/****************************************************************************/ 
-   
+  //*************************************************************************\\
+ //***************************************************************************\\ 
+//*****************************************************************************\\
+
+  integer L0_ = 8;
+  initial begin
+
+    ADD(x1,x0,x0);
+    ADDI(x2,x0,32);
+  Label(L0_);
+    ADDI(x1,x1,1);
+    BNE(x1,x2, LabelRef(L0_));
+    EBREAK();
+
+    endASM();
+  end
+
+
+always_ff @(posedge clk) begin
+    
+    if (rMEM_en) begin
+        MEM_dout <= MEM[MEM_addr[31:2]];
+    end 
+
+end
+
+endmodule

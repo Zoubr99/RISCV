@@ -19,7 +19,6 @@ module tb;
    logic [4:0] prev_LEDS = 0;
    initial begin
       clk = 0;
-	#10
       forever begin
 	 #1 clk = ~clk;
 	 if(led != prev_LEDS) begin

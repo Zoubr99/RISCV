@@ -11,77 +11,129 @@ cModel Technology
 dC:/Users/zoubr/OneDrive/Desktop/RISC V/TB/Step 1
 vclk_divider
 Z0 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z1 !s110 1709682792
+!s110 1717111662
 !i10b 1
 !s100 <UjlS<zcUEoZUaU:N;0VS3
-Z2 !s11b Dg1SIo80bB@j0V0VzS_@n1
-IcK^HKC6:L]1_L_Kk>N>VV3
-Z3 VDg1SIo80bB@j0V0VzS_@n1
+Z1 !s11b Dg1SIo80bB@j0V0VzS_@n1
+I[4KTdbWZzQD@IjG1_d1Ag2
+Z2 VDg1SIo80bB@j0V0VzS_@n1
 S1
-Z4 dC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC
+Z3 dC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC
 w1709599520
-8clk_divider.sv
-Fclk_divider.sv
-!i122 200
-Z5 L0 1 30
-Z6 OV;L;2020.1;71
+8C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/clk_divider.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/clk_divider.sv
+!i122 202
+Z4 L0 1 30
+Z5 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z7 !s108 1709682791.000000
-Z8 !s107 clk_divider.sv|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_o.sv|
-Z9 !s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_o.sv|
+!s108 1717111661.000000
+!s107 C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/clk_divider.sv|
+!s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/clk_divider.sv|
 !i113 1
-Z10 o-work work
-Z11 tCvgOpt 0
-vSOC
+Z6 o-work work
+Z7 tCvgOpt 0
+vIns_Memmory
 R0
-R1
+!s110 1717112544
 !i10b 1
-!s100 nBj]Bj>]H?1;]0Mz>T1HJ0
+!s100 `e`K<EB9@m=l:8HRam?[G2
+R1
+IOMZb@b`OF>X^@o`Jced;30
 R2
-Ie6D91DXaWE8@5Ec`i4iHS2
-R3
 S1
-R4
-w1709682767
-8C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_o.sv
-FC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_o.sv
-!i122 200
-L0 4 268
-R6
+R3
+w1717112513
+8C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/Ins_Memmory.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/Ins_Memmory.sv
+!i122 208
+L0 1 864
+R5
 r1
 !s85 0
 31
-R7
-R8
-R9
+!s108 1717112544.000000
+!s107 C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/Ins_Memmory.sv|
+!s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/Ins_Memmory.sv|
 !i113 1
-R10
-R11
-n@s@o@c
+R6
+R7
+n@ins_@memmory
+vProcessor_Core
+R0
+!s110 1717112760
+!i10b 1
+!s100 2b<aVBmD^OMBm:HmzQ=Sc2
+R1
+Il7L8I@3CzlgY0G^jm[c;_2
+R2
+S1
+R3
+w1717112743
+8C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/Processor_Core.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/Processor_Core.sv
+!i122 209
+L0 5 404
+R5
+r1
+!s85 0
+31
+!s108 1717112760.000000
+!s107 C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/Processor_Core.sv|
+!s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/Processor_Core.sv|
+!i113 1
+R6
+R7
+n@processor_@core
+vSoC
+R0
+!s110 1717114095
+!i10b 1
+!s100 fC1PR7azGR`_5da6FoKO50
+R1
+IgCd2QV;??fnT0X<j[G5j60
+R2
+S1
+R3
+w1717114089
+8C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC.sv
+FC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC.sv
+!i122 211
+L0 1 56
+R5
+r1
+!s85 0
+31
+!s108 1717114095.000000
+!s107 C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC.sv|
+!s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC.sv|
+!i113 1
+R6
+R7
+n@so@c
 vtb
 R0
-!s110 1709682794
+!s110 1717114098
 !i10b 1
-!s100 AWQL[6Rgfj[cDgDBBPmcO1
+!s100 5aFBY0<I>@WLS]hSO45^o1
+R1
+IXalb=?Dgo7QF_nLY>U[fL0
 R2
-IMT>2d<`_LAD7c_hD<T[g`3
-R3
 S1
-R4
-w1701895784
+R3
+w1717111750
 8C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_TB.sv
 FC:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_TB.sv
-!i122 201
+!i122 212
+R4
 R5
-R6
 r1
 !s85 0
 31
-!s108 1709682794.000000
+!s108 1717114098.000000
 !s107 C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_TB.sv|
 !s90 -reportprogress|300|-work|work|C:/Users/zoubr/OneDrive/Desktop/RISCV/RISCV/TB/SoC/SoC_TB.sv|
 !i113 1
-R10
-R11
+R6
+R7
