@@ -1,8 +1,10 @@
+//`include "clk_divider.sv"
+
 module SoC(
 
         input logic CLK,
         input logic RESET,
-        output logic [4:0] LEDS,
+        output  [4:0] LEDS,
         input logic  RXD, 
         output logic TXD
 
@@ -17,6 +19,7 @@ module SoC(
         wire inter_rMEMenable;
         wire [31:0] leds_x1;
         
+       
         
     Ins_Memmory RAM (
         .clk(clk),
@@ -41,7 +44,7 @@ module SoC(
         assign LEDS = leds_x1[4:0];
 
 
-    clk_divider #(.SLOW(2))
+    clk_divider #(.SLOW(23))
     clk_divider (
 
         .CLK(CLK),

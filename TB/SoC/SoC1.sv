@@ -17,6 +17,8 @@ wire resetn;
 reg [31:0] MEM [0:255]; // BRAM
 reg [31:0] PC = 0; // Program Counter
 
+
+
         // add x0, x0, x0
               //                   rs2   rs1  add  rd   ALUREG
 reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instruction reg
@@ -119,5 +121,7 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
   // assigning the count to the leds
   assign LEDS = (isSYSTEM) ? 16 : {PC[0],isALUimm,isStore,isLoad,isALUreg};
   assign TXD = 1'b0;
+  
+
     
 endmodule

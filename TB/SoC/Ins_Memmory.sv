@@ -1,4 +1,7 @@
+//`include "clk_divider.sv"
+
 module Ins_Memmory(
+    input logic CLK,
     input logic clk, 
     input logic [31:0] MEM_addr,
     output logic [31:0] MEM_dout,
@@ -838,18 +841,21 @@ endtask
   //*************************************************************************\\
  //***************************************************************************\\ 
 //*****************************************************************************\\
-
+  logic prog_i = 0;
   integer L0_ = 8;
-  initial begin
-
+  always_ff @(posedge CLK) begin
+  
+    if(prog_i == 0)begin
     ADD(x1,x0,x0);
     ADDI(x2,x0,32);
   Label(L0_);
     ADDI(x1,x1,1);
     BNE(x1,x2, LabelRef(L0_));
     EBREAK();
-
+    
     endASM();
+       prog_i = 1;
+     end 
   end
 
 

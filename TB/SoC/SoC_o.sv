@@ -1,34 +1,30 @@
-//`include "clk_divider.sv"
-
+`include "clk_divider.sv"
 //`default_nettype none
 
-module Processor_Core( // declaring the inputs and outputs
-    input logic clk,
-    input logic resetn,
-    input logic [31:0] MEM_dout,
-
-    output logic [31:0] MEM_addr,
-    output logic rMEM_en,
-    output logic [31:0] x10
+module SOC( // declaring the inputs and outputs
+    input logic CLK,
+    input logic RESET,
+    output logic [4:0] LEDS,
+    input logic RXD, // UART receiver
+    output logic TXD // UART Transmitter
 );
 
-//wire clk;
-//wire resetn;
+wire clk;
+wire resetn;
 
-//reg [4:0] leds;
-//assign LEDS = leds;
+reg [4:0] leds;
+assign LEDS = leds;
 
 // declaring a 5 bit register
-//reg [31:0] MEM [0:255]; // BRAM
+reg [31:0] MEM [0:255]; // BRAM
 reg [31:0] PC = 0; // Program Counter
 reg [31:0] C_INST;
-
- /*
+ 
         // add x0, x0, x0
               //                   rs2   rs1  add  rd   ALUREG
-reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instruction reg
+//reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instruction reg
 
- 
+ /*
   // initiliasing the SoC Memmory with some instructions
    initial begin // this is only for TB simulation purposes
 
@@ -72,11 +68,121 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
         
    end
 
-    */
+   */
 
-  /* 
-   initial begin
-      PC = 0;
+   /*
+/*
+ * A simple assembler for RiscV written in SYSTEMVERILOG.
+ * See table page 104 of RiscV instruction manual.
+ * Bruno Levy, March 2022
+ */
+
+// Machine code will be generated in MEM,
+// starting from address 0 (can be changed below,
+// initial value of memPC).
+//
+// Example:
+//
+// module MyModule( my inputs, my outputs ...);
+//    ...
+//    reg [31:0] MEM [0:255]; 
+//    `include "riscv_assembly.sv" // yes, needs to be included from here.
+//    integer L0_;
+//    initial begin
+//                  ADD(x1,x0,x0);
+//                  ADDI(x2,x0,32);
+//      Label(L0_); ADDI(x1,x1,1); 
+//                  BNE(x1, x2, LabelRef(L0_));
+//                  EBREAK();
+//    end
+//   1) simulate with icarus, it will complain about uninitialized labels,
+//      and will display for each Label() statement the address to be used
+//      (in the present case, it is 8)
+//   2) replace the declaration of the label:
+//      integer L0_ = 8;
+//      re-simulate with icarus
+//      If you made an error, it will be detected
+//   3) synthesize with yosys
+// (if you do not use labels, you can synthesize directly, of course...)
+//
+//
+// You can change the address where code is generated
+//   by assigning to memPC (needs to be a word boundary).
+//
+// NOTE: to be checked, LUI, AUIPC take as argument
+//     pre-shifted constant, unlike in GNU assembly
+
+reg [31:0] memPC = 0;
+
+/***************************************************************************/
+
+/*
+ * Register names.
+ * Looks stupid, but makes assembly code more legible (without it,
+ * one does not make the difference between immediate values and 
+ * register ids).
+ */ 
+
+localparam x0 = 0, x1 = 1, x2 = 2, x3 = 3, x4 = 4, x5 = 5, x6 = 6, x7 = 7, 
+           x8 = 8, x9 = 9, x10=10, x11=11, x12=12, x13=13, x14=14, x15=15,
+           x16=16, x17=17, x18=18, x19=19, x20=20, x21=21, x22=22, x23=23,
+           x24=24, x25=25, x26=26, x27=27, x28=28, x29=29, x30=30, x31=31;
+
+/***************************************************************************/
+
+/*
+ * R-Type instructions.
+ * rd <- rs1 OP rs2
+ */
+    task RType(
+      input logic [6:0] opcode,
+      input logic [4:0] rd,  
+      input logic [4:0] rs1,
+      input logic [4:0] rs2,
+      input logic [2:0] funct3,
+      input logic [6:0] funct7
+      );
+      begin
+          MEM[memPC[31:2]] = {funct7, rs2, rs1, funct3, rd, opcode};
+          memPC = memPC + 4;
+      end
+    endtask
+
+    task ADD(
+      input logic [4:0] rd,
+      input logic [4:0] rs1,
+      input logic [4:0] rs2
+      );
+      RType(7'b0110011, rd, rs1, rs2, 3'b000, 7'b0000000);
+    endtask
+
+
+
+    task IType(
+      input logic [6:0]  opcode,
+      input logic [4:0]  rd,  
+      input logic [4:0]  rs1,
+      input logic [31:0] imm,
+      input logic [2:0]  funct3
+      );
+      begin
+          MEM[memPC[31:2]] = {imm[11:0], rs1, funct3, rd, opcode};
+          memPC = memPC + 4;
+      end
+    endtask
+
+    task ADDI(
+      input logic [4:0]  rd,   
+      input logic [4:0]  rs1,
+      input logic [31:0] imm
+      );
+      begin
+          IType(7'b0010011, rd, rs1, imm, 3'b000);
+      end
+    endtask
+/***************************************************************************/
+
+always_ff @(posedge CLK) begin
       ADD(x0,x0,x0);
       ADD(x1,x0,x0);
       ADDI(x1,x1,1);
@@ -85,31 +191,11 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
       ADDI(x1,x1,1);
       ADD(x2,x1,x0);
       ADD(x3,x1,x2);
-      SRLI(x3,x3,3);
-      SLLI(x3,x3,31);
-      SRAI(x3,x3,5);
-      SRLI(x1,x3,26);
-      EBREAK();
-   end
-  */
-
-  /*
-  `include "riscv_assembly.sv"
-  integer L0_ = 8;
-  initial begin
-
-    ADD(x1,x0,x0);
-    ADDI(x2,x0,32);
-  Label(L0_);
-    ADDI(x1,x1,1);
-    BNE(x1,x2, LabelRef(L0_));
-    EBREAK();
-
-
-    endASM();
-
   end
-  */
+
+/***************************************************************************/
+/****************************************************************************/ 
+
    // RISCV instructions Decoder
   //*********************************************************************************//
   //*********************************************************************************//
@@ -154,120 +240,60 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
   wire [31:0] writeBackData;
   wire        writeBackEn; 
 
-    reg [31:0] RegisterFile [0:31] = // all is 0
-    
+    reg [31:0] RegisterFile [0:31]=// all is 0
+
     '{
 
     32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[0] 
-    32'b0000_0000_0000_0000_0000_0000_0000_0100,   // REG[1]
-    32'b0000_0000_0000_0000_0000_0000_0000_0101,   // REG[2]
-    32'b0000_0000_0000_0000_0000_0000_0000_0110,   // REG[3]
-    32'b0000_0000_0000_0000_0000_0000_0000_0111,   // REG[4]
-    32'b0000_0000_0000_0000_0000_0000_0000_1000,   // REG[5]
-    32'b0000_0000_0000_0000_0000_0000_0000_1001,   // REG[6]
-    32'b0000_0000_0000_0000_0000_0000_0000_1010,   // REG[7]
-    32'b0000_0000_0000_0000_0000_0000_0000_1011,   // REG[8]
-    32'b0000_0000_0000_0000_0000_0000_0000_1100,   // REG[9]
-    32'b0000_0000_0000_0000_0000_0000_0000_1101,   // REG[10]
-    32'b0000_0000_0000_0000_0000_0000_0000_1110,   // REG[11]
-    32'b0000_0000_0000_0000_0000_0000_0000_1111,   // REG[12]
-    32'b0000_0000_0000_0000_0000_0000_0001_0000,   // REG[13]
-    32'b0000_0000_0000_0000_0000_0000_0001_0001,   // REG[14]
-    32'b0000_0000_0000_0000_0000_0000_0001_0010,   // REG[15]
-    32'b0000_0000_0000_0000_0000_0000_0001_0011,   // REG[16]
-    32'b0000_0000_0000_0000_0000_0000_0001_0100,   // REG[17]
-    32'b0000_0000_0000_0000_0000_0000_0001_0101,   // REG[18]
-    32'b0000_0000_0000_0000_0000_0000_0001_0110,   // REG[19]
-    32'b0000_0000_0000_0000_0000_0000_0001_0111,   // REG[20]
-    32'b0000_0000_0000_0000_0000_0000_0001_1000,   // REG[21]
-    32'b0000_0000_0000_0000_0000_0000_0001_1001,   // REG[22]
-    32'b0000_0000_0000_0000_0000_0000_0001_1010,   // REG[23]
-    32'b0000_0000_0000_0000_0000_0000_0001_1011,   // REG[24]
-    32'b0000_0000_0000_0000_0000_0000_0001_1100,   // REG[25]
-    32'b0000_0000_0000_0000_0000_0000_0001_1101,   // REG[26]
-    32'b0000_0000_0000_0000_0000_0000_0001_1110,   // REG[27]
-    32'b0000_0000_0000_0000_0000_0000_0001_1111,   // REG[28]
-    32'b0000_0000_0000_0000_0000_0000_0010_0000,   // REG[29]
-    32'b0000_0000_0000_0000_0000_0000_0010_0001,   // REG[30]
-    32'b0000_0000_0000_0000_0000_0000_0010_0010    // REG[31]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[1]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[2]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[3]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[4]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[5]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[6]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[7]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[8]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[9]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[10]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[11]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[12]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[13]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[14]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[15]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[16]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[17]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[18]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[19]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[20]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[21]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[22]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[23]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[24]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[25]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[26]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[27]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[28]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[29]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000,   // REG[30]
+    32'b0000_0000_0000_0000_0000_0000_0000_0000    // REG[31]
 
     };
-    
+
+
+
 
   //*********************************************************************************//
   //*********************************************************************************//
-
-
 
 
   //*********************************************************************************//
   //*********************************************************************************//
   // The ALU
    wire [31:0] aluIn1 = rs1;
-   wire [31:0] aluIn2 = isALUreg | isBranch ? rs2 : Iimm;
+   wire [31:0] aluIn2 = isALUreg ? rs2 : Iimm;
    reg [31:0] aluOut;
    wire [4:0] shamt = isALUreg ? rs2[4:0] : C_INST[24:20]; // shift amount
    //the shift amount is either the content of rs2 for ALUreg instructions or instr[24:20] (the same bits as rs2Id) for ALUimm instructions.
-
-
-  //*********************************************************************************//
-   // from this point the most cruicial thing to think of is the fact that all operations are done as (AluIn1 - AluIn2) if the most sig bit is 1 means 
-   // AluIn1 is less than AluIn2 if , MSB was 0 it means that AluIn1 is bigger
-
-   // the line below is like saying [ wire [32:0] aluMinus = aluIn1 - aluIn2 ]
-   wire [32:0] aluMinus = {1'b1, ~aluIn2} + {1'b0, aluIn1} + 33'b1;
-
-          wire aluin1EQ2aluin2 = (aluMinus[31:0] == 0); // this is gonna be 1 if the subtraction results in 0
-          wire aluin1LessThanUaluin2 = aluMinus[32]; // this gonna be 1 if the bit 33 of aluMinus is 1 ie (aluin1 < aluin2) signed
-
-          wire aluin1LessThanaluin2 = (aluIn1[31] ^ aluIn2[31]) ? aluIn1[31] : aluMinus[32]; // ^ = XOR, so if 1 ^ 0 = ~0 = 1 , 1^1 = ~1 = 0.
-          // so here it takes the MSB of the aluin1 and aluin2 (sign bits), so if they were having the same sign means:
-          // 1 and 1 or 0 and 0 -> 1 ^ 1 = ~1 = 0. therfore the output would depend on the sign of aluMinus[32] (aluin1 - aluin2)
-          // so if aluMinus[32] was 1 (negative) -> {subtraction result(aluin1 - aluin2) was negative}, thefore condition is true aluin1 is less than aluin2
-          // 1 and 0 or 0 and 1 -> 1 ^ 0 = ~0 = 1. therfore the output would depend on the sign of aluin1 which from the equation we got in this line was 1 (aluin1 negative) hence the condition is true
-          // and aluin1 is less than aluin2.
-
-
-   wire [31:0] aluPlus = aluIn1 + aluIn2;
-
-   // Flip a 32 bit word. Used by the shifter (a single shifter for
-   // left and right shifts, saves silicium !)
-   // functionality: takes a 32 bit input and puts the LSB in the MSB position and so on.....
-   function [31:0] flip32;
-      input [31:0] x;
-      flip32 = {x[ 0], x[ 1], x[ 2], x[ 3], x[ 4], x[ 5], x[ 6], x[ 7], 
-		x[ 8], x[ 9], x[10], x[11], x[12], x[13], x[14], x[15], 
-		x[16], x[17], x[18], x[19], x[20], x[21], x[22], x[23],
-		x[24], x[25], x[26], x[27], x[28], x[29], x[30], x[31]};
-   endfunction
-
-   // shifters
-   wire [31:0] shifter_in = (funct3 == 3'b001) ? flip32(aluIn1) : aluIn1; 
-   wire [31:0] shifter = $signed({C_INST[30] & aluIn1[31], shifter_in}) >>> aluIn2[4:0]; 
-   wire [31:0] leftshift = flip32(shifter);
-  // Example:
-  //aluIn1 = 32'b00000000000000000000000000001111 (15 in decimal)
-  //aluIn2 = 32'b00000000000000000000000000000010 (2 in decimal)
-  //funct3 = 3'b001
-  //C_INST = 32'b00000000000000000000000000000000
-
-  //LSB becomes MSB, second LSB becomes second MSB, etc.:
-  //flip32(aluIn1) = 32'b11110000000000000000000000000000
-  // >>> means arithmatic right shift , hence -> wire [31:0] shifter = $signed({C_INST[30] & aluIn1[31], shifter_in}) >>> aluIn2[4:0];
-  // {C_INST[30] & aluIn1[31], shifter_in} -> C_INST[30] & aluIn1[31] -> aluIn[31] = 0 , therfore C_INST[30] & aluIn1[31] = 0
-  //  33-bit number -> (sign bit + 31 bits of shifter_in) and shift right by aluIn2[4:0] (which is 2)
-  // {0, shifter_in} = 33'b0_11110000000000000000000000000000
-  // Right shift by 2: shifter = 33'b0_0011110000000000000000000000000 = 32'b00111100000000000000000000000000
-
-  //shifter = 32'b00111100000000000000000000000000
-  //leftshift = flip32(shifter) = 32'b000000000000000000000000111100
-
-
-
-
-  //*********************************************************************************//
-
-
 
    // ADD/SUB/ADDI: 
    // funct7[5] is 1 for SUB and 0 for ADD. We need also to test instr[5]
@@ -280,17 +306,18 @@ reg [31:0] C_INST =  32'b0000000_00000_00000_000_00000_0110011; //cureent instru
     case(funct3)
 
         3'b000: aluOut = (funct7[5] & C_INST[5]) ?  // C_INST[5] determines wether the instruction is immediate or ALUreg, funct7[5] determines wether if its ADD or SUB
-            aluMinus[31:0] : aluPlus;
+            (aluIn1 - aluIn2) : (aluIn1 + aluIn2);
 
-        3'b001: aluOut = leftshift; // shifts the ALU in1 (logically) to the left by the shifting ammount
+        3'b001: aluOut = aluIn1 << shamt; // shifts the ALU in1 (logically) to the left by the shifting ammount
 
-        3'b010: aluOut = {31'b0, aluin1LessThanaluin2}; // signed comparison
+        3'b010: aluOut = ($signed(aluIn1) < $signed(aluIn2)); // signed comparison
 
-        3'b011: aluOut = {31'b0, aluin1LessThanUaluin2}; // unsigned comparison
+        3'b011: aluOut = (aluIn1 < aluIn2); // unsigned comparison
 
         3'b100: aluOut = (aluIn1 ^ aluIn2); // XOR
 
-        3'b101: aluOut = shifter; // for logical or arithmetic right shift, by testing bit 5 of funct7 we determine which function to use, 1 for arithmetic shift (with sign expansion) and 0 for logical shift.
+        3'b101: aluOut = funct7[5]? ($signed(aluIn1) >>> shamt) : 
+            ($signed(aluIn1) >> shamt); // for logical or arithmetic right shift, by testing bit 5 of funct7 we determine which function to use, 1 for arithmetic shift (with sign expansion) and 0 for logical shift.
 
         3'b110: aluOut = (aluIn1 | aluIn2); // OR
 
@@ -303,17 +330,17 @@ reg Branch;
    always_comb begin
     case (funct3)
 
-      3'b000: Branch = aluin1EQ2aluin2; // if source reg 1  == source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+      3'b000: Branch = (rs1 == rs2); // if source reg 1  == source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
 
-      3'b001: Branch = !aluin1EQ2aluin2; // if source reg 1  != source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+      3'b001: Branch = (rs1 != rs2); // if source reg 1  != source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
 
-      3'b100: Branch = aluin1LessThanaluin2; // if signed source reg 1  < signed source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+      3'b100: Branch = ($signed(rs1) < $signed(rs2)); // if signed source reg 1  < signed source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
 
-      3'b101: Branch = !aluin1LessThanaluin2; // if signed source reg 1  >= signed source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+      3'b101: Branch = ($signed(rs1) >= $signed(rs2)); // if signed source reg 1  >= signed source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
 
-      3'b110: Branch = aluin1LessThanUaluin2; // if source reg 1  < source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+      3'b110: Branch = (rs1 < rs2); // if source reg 1  < source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
         
-      3'b111: Branch = !aluin1LessThanUaluin2; // if  source reg 1  >  source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
+      3'b111: Branch = (rs1 >= rs2); // if  source reg 1  >  source reg 2 set Branch to 1, brnach to the (PC + immediate offset value), if (isBranch && Branch) were true.
 
       default: Branch = 1'b0; // Branch is set to 0 as default
     endcase
@@ -355,26 +382,19 @@ reg Branch;
   //*********************************************************************************//
   //*********************************************************************************//
 
-  wire [31:0] PCplusImm = PC + (C_INST[3] ? Jimm[31:0] :
-                                C_INST[4] ? Uimm[31:0] :
-                                           Bimm[31:0] );
-                                          
-  wire [31:0] PCplus4 = PC + 4;
-
 
   localparam FETCH_INSTR = 0; // first state
-  localparam WAIT_INSTR = 1;
-  localparam FETCH_REGS = 2; // second state
-  localparam EXECUTE = 3; // third state
+  localparam FETCH_REGS = 1; // second state
+  localparam EXECUTE = 2; // third state
 
   reg [1:0] state = FETCH_INSTR; // startsd at fetching  instructions
 
   // register write back
-  assign writeBackData = (isJAL || isJALR ) ? (PCplus4) :
+  assign writeBackData = (isJAL || isJALR ) ? (PC + 4) :
                          (isLUI) ? Uimm :
-                         (isAUIPC) ? (PCplusImm) :
+                         (isAUIPC) ? (PC + Uimm) :
                           aluOut; // output of the ALU is assigned to writeback data , which hence will be written into the Reg File
-  /*
+
   assign writeBackEn = (state == EXECUTE && 
                         
                         (isALUreg ||
@@ -388,17 +408,15 @@ reg Branch;
                        );  // the writting back enable signal, depends on : 1 : we at EXECUTE state
                            //                                               2 : the instruction wich state is 1
 
-  */
-  assign writeBackEn = (state == EXECUTE && !isBranch && !isStore);
-
 
   //now the next PC "program counter" will be dependant on the on the instruction wether if it is JAL (set nextPC = PC + immed ) and (set rd = PC + 4 ) 
   // JALR (set nextPC = rs1 + immed) and (rd = PC + 4)
   // Branch (set nextPC = PC + Bimmed)
   // if the instruction was none of the jumping instruction then just increase the PC as normal (nextPC = PC + 4)
-  wire [31:0] nextPC = ((isBranch && Branch) || isJAL)? PCplusImm: // (PC + immed)
-                       (isJALR) ?  {aluPlus[31:1], 1'b0}: // (rs1 + immed) --> aluIn2 = isALUreg | isBranch ? rs2 : Iimm; , therfore aluPlus = rs1 + Iimm since it is JALR it is Iimm
-                        PCplus4;
+  wire [31:0] nextPC = (isBranch && Branch)? PC + Bimm:
+                       (isJAL) ? PC + Jimm:
+                       (isJALR) ? rs1 + Iimm:
+                        PC + 4;
 
 
 
@@ -416,20 +434,15 @@ reg Branch;
           RegisterFile[rdId] <= writeBackData;
 
           	    if(rdId == 1) begin // disblays contents of reg[1] on leds
-	              x10 <= writeBackData;
+	              leds <= writeBackData;
 	              end
         end
      //************************//
               case(state)
 
               FETCH_INSTR: begin
-               // C_INST <= MEM[PC[31:2]]; // assign the instruction in which the program counter is currently pointing towards
-                state <=  WAIT_INSTR; // go to the next state
-              end
-
-              WAIT_INSTR: begin
-                C_INST <= MEM_dout;
-                state <= FETCH_REGS;
+                C_INST <= MEM[PC[31:2]]; // assign the instruction in which the program counter is currently pointing towards
+                state <=  FETCH_REGS; // go to the next state
               end
 
               FETCH_REGS: begin
@@ -454,11 +467,11 @@ reg Branch;
       end
   end
 
-  assign MEM_addr = PC;
-  assign rMEM_en = (state == FETCH_INSTR);
 
-/*
-  clk_divider #(.SLOW(2))
+
+
+
+  clk_divider #(.SLOW(26))
   clk_divider (
 
      .CLK(CLK),
@@ -467,11 +480,9 @@ reg Branch;
      .resetn(resetn)
 
     );
-*/
-
-
+   
   // assigning the count to the leds
   //assign LEDS = (isSYSTEM) ? 16 : {PC[0],isALUimm,isStore,isLoad,isALUreg};
- //assign TXD = 1'b0;
+  assign TXD = 1'b0;
     
 endmodule
