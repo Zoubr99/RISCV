@@ -842,16 +842,36 @@ endtask
  //***************************************************************************\\ 
 //*****************************************************************************\\
   logic prog_i = 0;
-  integer L0_ = 8;
+
+
+  localparam slow_bit = 1;
+
+   // these are labels just like the ones in C, goto: (LabelRef(L0_)) and label: label(L0_)
+   // every 4 represents 32 bit word (instruction)
+  integer L0_ = 4;
+  integer wait_ = 20;
+  integer L1_ = 28;
+
   always_ff @(posedge CLK) begin
   
     if(prog_i == 0)begin
-    ADD(x1,x0,x0);
-    ADDI(x2,x0,32);
-  Label(L0_);
-    ADDI(x1,x1,1);
-    BNE(x1,x2, LabelRef(L0_));
-    EBREAK();
+    ADD(x10,x0,x0); //4
+  Label(L0_);  
+    ADDI(x10,x10,1); //8
+    JAL(x1, LabelRef(wait_)); // call(wait_) //12
+    JAL(zero, LabelRef(L0_)); // jump(L0_) //16
+
+    EBREAK(); //20
+
+  Label(wait_);
+    ADDI(x11,x0,1); //24
+    SLLI(x11,x11,slow_bit); //28
+
+  Label(L1_);
+    ADDI(x11,x11,-1); //32
+    BNE(x11,x0, LabelRef(L1_)); //36
+    JALR(x0,x1,0); //40
+    
     
     endASM();
        prog_i = 1;
