@@ -415,7 +415,7 @@ reg Branch;
         if (writeBackEn && rdId != 0) begin // these signals are not set as they need they need an ALU into the module
           RegisterFile[rdId] <= writeBackData;
 
-          	    if(rdId == 1) begin // disblays contents of reg[1] on leds
+		if(rdId != 0) begin // disblays contents of reg[1] on leds
 	              x10 <= writeBackData;
 	              end
         end
