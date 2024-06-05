@@ -855,29 +855,34 @@ endtask
   always_ff @(posedge CLK) begin
   
     if(prog_i == 0)begin
-    ADD(x10,x0,x0); //4
+    //ADD(x10,x0,x0); //4
+    LI(a0,0);
   Label(L0_);  
     ADDI(x10,x10,1); //8
-    JAL(x1, LabelRef(wait_)); // call(wait_) //12
-    JAL(zero, LabelRef(L0_)); // jump(L0_) //16
+    //JAL(x1, LabelRef(wait_)); // call(wait_) //12
+    CALL(LabelRef(wait_));
+    //JAL(zero, LabelRef(L0_)); // jump(L0_) //16
+    J(LabelRef(L0_));
 
     EBREAK(); //20
 
   Label(wait_);
-    ADDI(x11,x0,1); //24
+    //ADDI(x11,x0,1); //24
+    LI(a1,1);
     SLLI(x11,x11,slow_bit); //28
 
   Label(L1_);
     ADDI(x11,x11,-1); //32
-    BNE(x11,x0, LabelRef(L1_)); //36
-    JALR(x0,x1,0); //40
+    //BNE(x11,x0, LabelRef(L1_)); //36
+    BNEZ(a1,LabelRef(L1_));
+    //JALR(x0,x1,0); //40
+    RET();
     
     
     endASM();
        prog_i = 1;
      end 
   end
-
 
 always_ff @(posedge clk) begin
     
