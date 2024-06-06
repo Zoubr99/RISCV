@@ -9,6 +9,8 @@ module Processor_Core( // declaring the inputs and outputs
 
     output logic [31:0] MEM_addr,
     output logic rMEM_en,
+    output logic MEM_Wdata,
+    output logic MEM_Wmask,
     output logic [31:0] x10
 );
 
@@ -366,8 +368,12 @@ reg Branch;
   localparam WAIT_INSTR = 1;
   localparam FETCH_REGS = 2; // second state
   localparam EXECUTE = 3; // third state
+  localparam LOAD = 4;
+  localparam WAIT_DATA = 5;
+  localparam STORE = 6;
 
-  reg [1:0] state = FETCH_INSTR; // startsd at fetching  instructions
+
+  reg [2:0] state = FETCH_INSTR; // startsd at fetching  instructions
 
   // register write back
   assign writeBackData = (isJAL || isJALR ) ? (PCplus4) :
@@ -389,7 +395,7 @@ reg Branch;
                            //                                               2 : the instruction wich state is 1
 
   */
-  assign writeBackEn = (state == EXECUTE && !isBranch && !isStore);
+  assign writeBackEn = (state == EXECUTE && !isBranch && !isStore && !isLoad) || (state == WAIT_DATA);
 
 
   //now the next PC "program counter" will be dependant on the on the instruction wether if it is JAL (set nextPC = PC + immed ) and (set rd = PC + 4 ) 
@@ -400,7 +406,49 @@ reg Branch;
                        (isJALR) ?  {aluPlus[31:1], 1'b0}: // (rs1 + immed) --> aluIn2 = isALUreg | isBranch ? rs2 : Iimm; , therfore aluPlus = rs1 + Iimm since it is JALR it is Iimm
                         PCplus4;
 
+  // loading registers with memmory contents, the memmory accessing is done
+  // by accessing a byte , halfword  or a word. we diffrentiate using funct3[1:0] :
+  // - funct3[1:0]:  00->byte 01->halfword 10->word
 
+  // address of memmory to be accessed
+  wire [31:0] LoadNstore_addr = rs1 + (isStore? Simm : Iimm); // the adress of the instruction in memmory to be loaded into a reg
+
+  // Decoding type of data to be obtained from memmory 
+  wire MEM_byteA = funct3[1:0] == 2'b00; // Decoding the current C_INST, and checking how to get data from memmory (Byte, Half Word) 
+  wire MEM_halfwordA = funct3[1:0] == 2'b01; // so if funct3[1:0] = 2'b00, it means we want to get data from memmory as bytes, if 2'b01, it means we want data as half a word.
+
+  // routing memmory blocks to diffrent wires and signals
+  wire [15:0] Load_halfword = LoadNstore_addr[1] ? MEM_dout[31:16] : MEM_dout[15:0]; // if loadNstore_addr[1] = 0 , Load_halfword = MEM_dout[15:0];, which is the first half word of the instruction
+  wire [7:0] Load_byte = LoadNstore_addr[0] ? Load_halfword[15:8] : Load_halfword[7:0]; // therfore lets say loadNstore_addr[0] = 1 , Load_byte = Load_halfword[15:8], which is the 2nd byte of the instruction
+
+  // since load has sign expansion features, one need to create a logic for that:
+  // if funct3[2] =  0: do sign expansion ,  1: no sign expansion
+  // Exapmle : take the number -1 -> 8'b11111111, loading it in a 32-bit register with
+  //LBU will result in 32'b0000000000000000000000011111111, whereas loading it with LB will result in 32'b11111111111111111111111111111111,
+  wire Load_sign = !funct3[2] & (MEM_byteA ? Load_byte[7] : Load_halfword[15]); // & !funct3[2] with either the MSB of the byte if the load was byte accessible otherwise & with the MSB of the Half word. 
+
+  // the reg in wich the data to be loaded into
+  wire [31:0] Load_data = MEM_byteA ? {{24{Load_sign}}, Load_byte} : // if the decoding funct3[1:0] indicates to load byte get it from Load_byte signal / if funct3[2] is 0 load_sign will concatinate the 24 bits with 1s else 0s 
+                          MEM_halfwordA ? {{16{Load_sign}}, Load_halfword} : // if the decoding funct3[1:0] indicates to load half a word get it from Load_halfword signal / if funct3[2] is 0 load_sign will concatinate the 16 bits with 1s else 0s
+                          MEM_dout; // otherwise load the whole word
+
+
+  // Store----
+  assign MEM_Wdata[7:0] = rs2[7:0];
+  assign MEM_Wdata[15:8] = loadNstore_addr[0]? rs2[7:0] : rs2[15:8];
+  assign MEM_Wdata[23:16] = loadNstore_addr[1]? rs2[7:0] : rs2[23:16];
+  assign MEM_Wdata[31:24] = loadNstore_addr[0]? rs2[7:0] : loadNstore_addr[1]? rs2[15:8] : rs2[31:24];
+
+
+  wire [31:0] Store_mask =      MEM_byteA ?
+                                        (loadNstore_addr[1]?
+
+                                              (loadNstore_addr[0]? 4'b1000 : 4'b0100) : (loadNstore_addr[0]? 4'b0010 : 4'b0001)
+
+                                        );
+                                MEM_halfwordA?
+                                        (loadNstore_addr[1]? 4'b1100 : 4'b0011) : (4'b1111);
+                          
 
   // sequential logic based on clock edges
   always_ff @(posedge clk, negedge resetn) begin
@@ -449,13 +497,29 @@ reg Branch;
                 end
                 state <= FETCH_INSTR; 
               end
-            
+
+              LOAD: begin
+                state <= WAIT_DATA;
+              end
+
+              WAIT_DATA: begin
+                state <= FETCH_INSTR;
+              end
+
+              STORE: begin
+                state <= FETCH_INSTR;
+              end
+   
               endcase
       end
   end
 
-  assign MEM_addr = PC;
-  assign rMEM_en = (state == FETCH_INSTR);
+  assign MEM_addr = (state == WAIT_INSTR || state == FETCH_INSTR)?  PC : LoadNstore_addr;
+
+
+  assign rMEM_en = (state == FETCH_INSTR || state == LOAD);
+
+  assign MEM_Wmask = {4{(state == STORE)}} & Store_mask;
 
 /*
   clk_divider #(.SLOW(2))

@@ -6,6 +6,8 @@ module Ins_Memmory(
     input logic [31:0] MEM_addr,
     output logic [31:0] MEM_dout,
     input logic rMEM_en
+    input logic [31:0] MEM_Wdata,
+    input logic [3:0] MEM_Wmask
 );
     
     reg [31:0] MEM [0:255];
@@ -857,38 +859,67 @@ endtask
     if(prog_i == 0)begin
     //ADD(x10,x0,x0); //4
     LI(a0,0);
-  Label(L0_);  
-    ADDI(x10,x10,1); //8
-    //JAL(x1, LabelRef(wait_)); // call(wait_) //12
-    CALL(LabelRef(wait_));
-    //JAL(zero, LabelRef(L0_)); // jump(L0_) //16
-    J(LabelRef(L0_));
+    LI(s1,16);
+  Label(L0_);
+    LB(a0,s0,400); 
 
+   //JAL(x1, LabelRef(wait_)); // call(wait_) //12
+    CALL(LabelRef(wait_));
+
+    ADDI(s0,s1,1); //8
+    BNE(s0,s1,LabelRef(L0_));
     EBREAK(); //20
+
+    //JAL(zero, LabelRef(L0_)); // jump(L0_) //16
+    //J(LabelRef(L0_));
+
+    
 
   Label(wait_);
     //ADDI(x11,x0,1); //24
-    LI(a1,1);
-    SLLI(x11,x11,slow_bit); //28
+    LI(t0,1);
+    SLLI(t0,t0,slow_bit); //28
 
   Label(L1_);
-    ADDI(x11,x11,-1); //32
+    ADDI(t0,t0,-1); //32
     //BNE(x11,x0, LabelRef(L1_)); //36
-    BNEZ(a1,LabelRef(L1_));
+    BNEZ(t0,LabelRef(L1_));
     //JALR(x0,x1,0); //40
     RET();
     
     
     endASM();
+
+    MEM[100] = {8'h4, 8'h3, 8'h2, 8'h1}; 
+    MEM[101] = {8'h8, 8'h7, 8'h6, 8'h5};
+    MEM[102] = {8'hc, 8'hb, 8'ha, 8'h9};
+    MEM[103] = {8'hff, 8'hf, 8'he, 8'hd};
+
+
+
+
        prog_i = 1;
      end 
   end
 
+wire [29:0] Word_addr = MEM_addr[31:2];
 always_ff @(posedge clk) begin
     
     if (rMEM_en) begin
-        MEM_dout <= MEM[MEM_addr[31:2]];
+        MEM_dout <= MEM[Word_addr];
     end 
+
+    if(MEM_Wmask[0])
+    MEM[Word_addr][7:0] <= MEM_Wdata[7:0];
+
+    if(MEM_Wmask[1])
+    MEM[Word_addr][15:8] <= MEM_Wdata[15:8];
+
+    if(MEM_Wmask[2])
+    MEM[Word_addr][23:16] <= MEM_Wdata[23:16];
+
+    if(MEM_Wmask[3])
+    MEM[Word_addr][31:24] <= MEM_Wdata[31:24];
 
 end
 
