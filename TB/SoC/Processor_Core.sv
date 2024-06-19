@@ -9,8 +9,8 @@ module Processor_Core( // declaring the inputs and outputs
 
     output logic [31:0] MEM_addr,
     output logic rMEM_en,
-    output logic MEM_Wdata,
-    output logic MEM_Wmask,
+    output logic [31:0] MEM_Wdata,
+    output logic [3:0] MEM_Wmask,
     output logic [31:0] x10
 );
 
@@ -375,11 +375,6 @@ reg Branch;
 
   reg [2:0] state = FETCH_INSTR; // startsd at fetching  instructions
 
-  // register write back
-  assign writeBackData = (isJAL || isJALR ) ? (PCplus4) :
-                         (isLUI) ? Uimm :
-                         (isAUIPC) ? (PCplusImm) :
-                          aluOut; // output of the ALU is assigned to writeback data , which hence will be written into the Reg File
   /*
   assign writeBackEn = (state == EXECUTE && 
                         
@@ -433,21 +428,30 @@ reg Branch;
                           MEM_dout; // otherwise load the whole word
 
 
+
+                            // register write back
+  assign writeBackData = (isJAL || isJALR ) ? (PCplus4) :
+                         (isLUI) ? Uimm :
+                         (isAUIPC) ? (PCplusImm) :
+                         (isLoad)  ? (Load_data) :
+                          aluOut; // output of the ALU is assigned to writeback data , which hence will be written into the Reg File
+
+
   // Store----
   assign MEM_Wdata[7:0] = rs2[7:0];
-  assign MEM_Wdata[15:8] = loadNstore_addr[0]? rs2[7:0] : rs2[15:8];
-  assign MEM_Wdata[23:16] = loadNstore_addr[1]? rs2[7:0] : rs2[23:16];
-  assign MEM_Wdata[31:24] = loadNstore_addr[0]? rs2[7:0] : loadNstore_addr[1]? rs2[15:8] : rs2[31:24];
+  assign MEM_Wdata[15:8] = LoadNstore_addr[0]? rs2[7:0] : rs2[15:8];
+  assign MEM_Wdata[23:16] = LoadNstore_addr[1]? rs2[7:0] : rs2[23:16];
+  assign MEM_Wdata[31:24] = LoadNstore_addr[0]? rs2[7:0] : LoadNstore_addr[1]? rs2[15:8] : rs2[31:24];
 
 
   wire [31:0] Store_mask =      MEM_byteA ?
-                                        (loadNstore_addr[1]?
+                                        (LoadNstore_addr[1]?
 
-                                              (loadNstore_addr[0]? 4'b1000 : 4'b0100) : (loadNstore_addr[0]? 4'b0010 : 4'b0001)
+                                              (LoadNstore_addr[0]? 4'b1000 : 4'b0100) : (LoadNstore_addr[0]? 4'b0010 : 4'b0001)
 
-                                        );
+                                        ):
                                 MEM_halfwordA?
-                                        (loadNstore_addr[1]? 4'b1100 : 4'b0011) : (4'b1111);
+                                        (LoadNstore_addr[1]? 4'b1100 : 4'b0011) : (4'b1111);
                           
 
   // sequential logic based on clock edges
@@ -495,7 +499,9 @@ reg Branch;
                 PC <= nextPC;
                 //C_INST <= EBREAK(); // NOP // may not be needed !!!!!!
                 end
-                state <= FETCH_INSTR; 
+                state <= isLoad  ? LOAD  : 
+		                     isStore ? STORE : 
+		                     FETCH_INSTR; 
               end
 
               LOAD: begin
