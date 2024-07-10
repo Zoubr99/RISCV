@@ -57,8 +57,30 @@ module SoC(
         .MEM_Wmask(inter_MEM_Wmask),
         .x10(leds_x10)
     );
+/*
+       // instantiate bridge
+   mcs_bridge #(.BRG_BASE(BRG_BASE))
+    bridge_unit (
+                    .io_address(inter_MEMaddr),
+                    .io_read_data(inter_MEMdout),
+                    .io_read_strobe(isIO & inter_rMEMenable),
+                    .io_write_data(inter_MEM_Wdata),
+                    .io_write_strobe(isIO & inter_wMEM_en),
+                 
+
+                 // mmio bit signals
+                    .b_video_cs(),
+                    .b_mmio_cs(), 
+                    .b_wr(),
+                    .b_rd(),
+                    .b_addr(),
+                    .b_wr_data(),
+                    .b_rd_data()                 
+                );
 
 
+
+*/
     localparam io_leds_bit = 0;
     localparam io_uartd_bit = 1;
     localparam io_uartc_bit = 2;
